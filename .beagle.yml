@@ -26,10 +26,10 @@ pipeline:
     dns: 223.5.5.5
     volumes:
       - /data/cache/yarn/:/usr/local/share/.cache/yarn
-    environment:
-      - NODE_ENV=production
     commands:
-      - yarn install --frozen-lockfile
+      - yarn install --pure-lockfile
+      - npm rebuild node-sass
+      - export NODE_ENV=production
       - yarn build
 
   store-cache:

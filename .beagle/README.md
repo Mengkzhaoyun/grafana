@@ -22,7 +22,7 @@ docker run -ti --rm \
 -v $PWD/:/go/src/github.com/grafana/grafana \
 -w /go/src/github.com/grafana/grafana \
 registry.cn-qingdao.aliyuncs.com/wod/devops-node:12.19.0-buster \
-bash -c 'yarn install --pure-lockfile && export NODE_ENV=production && yarn build'
+bash -c 'yarn install --pure-lockfile && npm rebuild node-sass && export NODE_ENV=production && yarn build'
 
 docker run -it \
 --rm \
