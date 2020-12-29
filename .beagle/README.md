@@ -1,12 +1,14 @@
 # git
 
 ```bash
+# github.com/grafana/grafana
 git remote add upstream git@github.com:grafana/grafana.git
 
 git fetch upstream
 
 git merge v7.3.6
 
+# cloud.wodcloud.com/git/cloud/grafana
 git remote add beagle git@cloud.wodcloud.com:cloud/grafana.git
 
 git fetch beagle
