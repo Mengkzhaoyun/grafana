@@ -1,0 +1,124 @@
+platform: 10.11.92.33
+
+workspace:
+  base: /go
+  path: src/github.com/grafana/grafana
+
+clone:
+  git:
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-git:1.0
+    dns: 223.5.5.5
+
+pipeline:
+
+  read-cache:
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-cache:1.0
+    pull: true
+    restore: true
+    check: yarn.lock
+    mount:
+      - ./node_modules
+    volumes:
+      - /data/cache/:/cache
+
+  build-node:
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-node:12.19.0-buster
+    dns: 223.5.5.5
+    volumes:
+      - /data/cache/yarn/:/usr/local/share/.cache/yarn
+    environment:
+      - NODE_ENV=production
+    commands:
+      - yarn install --frozen-lockfile
+      - yarn build
+
+  store-cache:
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-cache:1.0
+    pull: true
+    rebuild: true
+    check: yarn.lock
+    mount:
+      - ./node_modules
+    volumes:
+      - /data/cache/:/cache
+
+  golang:
+    image: registry.cn-qingdao.aliyuncs.com/wod/golang:1.15.6-buster
+    dns: 223.5.5.5
+    volumes:
+      - /data/cache/golang/pkg/:/go/pkg/ 
+    environment:
+      - GOPROXY=https://goproxy.cn
+    commands:
+      - bash .beagle/build.sh
+
+  docker:
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
+    dns: 223.5.5.5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    base: registry.cn-qingdao.aliyuncs.com/wod/debian:bullseye-slim
+    dockerfile: .beagle/dockerfile
+    repo: wod/grafana
+    version: v7.3.6
+    args: "TARGETOS=linux,TARGETARCH=amd64"
+    registry: registry.cn-qingdao.aliyuncs.com
+    secrets:
+      - source: REGISTRY_USER_ALIYUN
+        target: REGISTRY_USER
+      - source: REGISTRY_PASSWORD_ALIYUN
+        target: REGISTRY_PASSWORD
+
+  docker-arm64:
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
+    dns: 223.5.5.5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    base: registry.cn-qingdao.aliyuncs.com/wod/debian:bullseye-slim-arm64
+    dockerfile: .beagle/dockerfile
+    repo: wod/grafana
+    version: v7.3.6
+    channel: arm64
+    args: "TARGETOS=linux,TARGETARCH=amd64"
+    registry: registry.cn-qingdao.aliyuncs.com
+    secrets: 
+      - source: REGISTRY_USER_ALIYUN
+        target: REGISTRY_USER
+      - source: REGISTRY_PASSWORD_ALIYUN
+        target: REGISTRY_PASSWORD
+        
+  docker-ppc64le:
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
+    dns: 223.5.5.5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    base: registry.cn-qingdao.aliyuncs.com/wod/debian:bullseye-slim-ppc64le
+    dockerfile: .beagle/dockerfile
+    repo: wod/grafana
+    version: v7.3.6
+    channel: ppc64le
+    args: "TARGETOS=linux,TARGETARCH=amd64"
+    registry: registry.cn-qingdao.aliyuncs.com
+    secrets: 
+      - source: REGISTRY_USER_ALIYUN
+        target: REGISTRY_USER
+      - source: REGISTRY_PASSWORD_ALIYUN
+        target: REGISTRY_PASSWORD
+
+  docker-mips64le:
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
+    dns: 223.5.5.5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    base: registry.cn-qingdao.aliyuncs.com/wod/debian:bullseye-slim-mips64le
+    dockerfile: .beagle/dockerfile
+    repo: wod/grafana
+    version: v7.3.6
+    channel: mips64le
+    args: "TARGETOS=linux,TARGETARCH=amd64"
+    registry: registry.cn-qingdao.aliyuncs.com
+    secrets: 
+      - source: REGISTRY_USER_ALIYUN
+        target: REGISTRY_USER
+      - source: REGISTRY_PASSWORD_ALIYUN
+        target: REGISTRY_PASSWORD
